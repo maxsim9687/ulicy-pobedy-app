@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<style>
+html,body,#map{margin:0;padding:0;width:100%;height:100%;background:#efe8de;font-family:-apple-system,Roboto,sans-serif}
+.pin{width:30px;height:30px;border-radius:50%;background:#9e2a2b;color:#f4efe7;display:flex;align-items:center;justify-content:center;font:700 14px sans-serif;border:3px solid #f4efe7;box-shadow:0 3px 10px rgba(0,0,0,.4);box-sizing:border-box}
+.pin.done{background:#3f8a5c}.pin.food{background:#c98a2b}
+.pin.cur{background:#f4efe7;color:#9e2a2b;border-color:#9e2a2b;transform:scale(1.2)}
+.pin.tram{width:22px;height:22px;font-size:11px}
+.me{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 8px rgba(59,130,246,.25);box-sizing:border-box}
+#err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:#1c0f0e}
+</style>
+<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
+</head><body><div id="map"></div><div id="err">Карта не загрузилась.<br>Проверьте интернет.</div>
+<script>
+/* Карта квеста для приложения. Нативная часть вызывает:
+   setup(json)  – точки, улицы и маршрут
+   setStage(i, doneJson) – текущий этап
+   setMe(lat, lon, acc) – где пользователь */
+var map=null, ready=false, pins=[], stages=[], me=null, meCircle=null, pending=[];
+var STREETS={"Рябинина":[[[56.79425,60.50621],[56.79253,60.50305]],[[56.7906,60.49947],[56.78933,60.4971]],[[56.79508,60.50818],[56.79599,60.50985]]],
+"Громова":[[[56.81256,60.57566],[56.81103,60.57376],[56.80968,60.57208],[56.80845,60.57056],[56.80463,60.56533],[56.80353,60.56392],[56.79929,60.55869],[56.79842,60.55723]]],
+"Гризодубовой":[[[56.80529,60.58197],[56.80247,60.59047]]]};
+var ROUTE=[[[56.7936,60.5050],[56.78911,60.51452]],[[56.78911,60.51452],[56.7926,60.5210],[56.7969,60.5288],[56.8051,60.5402],[56.8099,60.5462],[56.81273,60.55851]],[[56.81273,60.55851],[56.8085,60.5706],[56.80497,60.57502],[56.8040,60.5860]]];
+function call(fn){ if(ready) fn(); else pending.push(fn); }
+if(!window.ymaps){ document.getElementById('err').style.display='flex'; }
+else ymaps.ready(function(){
+  map=new ymaps.Map('map',{center:[56.802,60.54],zoom:12,controls:['zoomControl','typeSelector']});
+  window.PinLayout=ymaps.templateLayoutFactory.createClass('<div class="$[properties.cls]">$[properties.num]</div>');
+  window.MeLayout=ymaps.templateLayoutFactory.createClass('<div class="me"></div>');
+  for(var k in STREETS) STREETS[k].forEach(function(l){
+    map.geoObjects.add(new ymaps.Polyline(l,{hintContent:'улица '+k},{strokeColor:'#ec9a9688',strokeWidth:10}));
+    map.geoObjects.add(new ymaps.Polyline(l,{hintContent:'улица '+k},{strokeColor:'#9e2a2b',strokeWidth:4}));
+  });
+  map.geoObjects.add(new ymaps.Polyline(ROUTE[0],{},{strokeColor:'#1c0f0e',strokeWidth:3,strokeStyle:'dash'}));
+  map.geoObjects.add(new ymaps.Polyline(ROUTE[1],{hintContent:'Трамвай № 16'},{strokeColor:'#9e2a2b',strokeWidth:4,strokeStyle:'shortdot'}));
+  map.geoObjects.add(new ymaps.Polyline(ROUTE[2],{},{strokeColor:'#1c0f0e',strokeWidth:3,strokeStyle:'dash'}));
+  map.geoObjects.add(new ymaps.Placemark([56.81273,60.55851],{cls:'pin tram',num:'Т',hintContent:'Остановка «Волгоградская улица»'},{iconLayout:PinLayout,iconShape:{type:'Circle',coordinates:[11,11],radius:12},iconOffset:[-11,-11]}));
+  ready=true; pending.forEach(function(f){f();}); pending=[];
+});
+function setup(json){ call(function(){
+  stages=JSON.parse(json);
+  stages.forEach(function(s,k){ if(s.kind==='final') return;
+    var pm=new ymaps.Placemark([s.lat,s.lon],{cls:'pin',num:k+1,hintContent:s.title},{iconLayout:PinLayout,iconShape:{type:'Circle',coordinates:[15,15],radius:16},iconOffset:[-15,-15]});
+    map.geoObjects.add(pm); pins[k]=pm; });
+}); }
+function setStage(i, doneJson){ call(function(){
+  var done=JSON.parse(doneJson||'[]');
+  pins.forEach(function(p,k){ if(!p) return; var s=stages[k];
+    p.properties.set('cls','pin'+(s.kind==='food'?' food':'')+(done.indexOf(k)>=0?' done':'')+((k===i||(stages[i]&&stages[i].kind==='final'&&k===i-1))?' cur':'')); });
+  var s=stages[Math.min(i,stages.length-1)]; if(s) map.setCenter([s.lat,s.lon],14,{duration:400});
+}); }
+function setMe(lat,lon,acc){ call(function(){
+  var p=[lat,lon];
+  if(!me){ meCircle=new ymaps.Circle([p,acc||30],{},{fillColor:'#3b82f622',strokeColor:'#3b82f6',strokeWidth:1});
+    me=new ymaps.Placemark(p,{hintContent:'Вы здесь'},{iconLayout:MeLayout,iconShape:{type:'Circle',coordinates:[9,9],radius:12},iconOffset:[-9,-9],zIndex:1000});
+    map.geoObjects.add(meCircle); map.geoObjects.add(me); }
+  else { me.geometry.setCoordinates(p); meCircle.geometry.setCoordinates(p); meCircle.geometry.setRadius(acc||30); }
+}); }
+function showMe(){ call(function(){ if(me) map.setCenter(me.geometry.getCoordinates(),15,{duration:400}); }); }
+</script></body></html>

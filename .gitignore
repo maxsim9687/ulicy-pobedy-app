@@ -1,0 +1,11 @@
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+ios/*.xcodeproj
+ios/build/
+DerivedData/
+Payload/
+*.ipa
+*.apk

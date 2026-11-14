@@ -1,0 +1,81 @@
+name: Сборка приложений
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Сборка APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+      - name: Переименовать
+        run: cp android/app/build/outputs/apk/release/app-release.apk UlicyPobedy.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: UlicyPobedy.apk
+
+  ios:
+    name: iOS IPA (без подписи)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: XcodeGen
+        run: brew install xcodegen
+      - name: Сгенерировать проект
+        working-directory: ios
+        run: xcodegen generate
+      - name: Сборка без подписи
+        working-directory: ios
+        run: |
+          set -o pipefail
+          xcodebuild -project UlicyPobedy.xcodeproj -scheme UlicyPobedy -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build | tail -n 200
+      - name: Упаковать IPA
+        run: |
+          mkdir -p Payload
+          cp -R ios/build/Build/Products/Release-iphoneos/UlicyPobedy.app Payload/
+          zip -qr UlicyPobedy.ipa Payload
+          ls -la UlicyPobedy.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: UlicyPobedy.ipa
+
+  release:
+    name: Выпуск
+    needs: [android, ios]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Улицы Победы 1.0 (сборка ${{ github.run_number }})
+          body: |
+            Android: UlicyPobedy.apk – установить на телефон напрямую.
+            iPhone: UlicyPobedy.ipa – без подписи, ставится через Sideloadly или AltStore. Инструкция: https://city.maxsim.space/app/
+          files: |
+            UlicyPobedy.apk
+            UlicyPobedy.ipa
