@@ -33,11 +33,11 @@ jobs:
 
   ios:
     name: iOS IPA (без подписи)
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - name: Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+        run: xcodebuild -version
       - name: XcodeGen
         run: brew install xcodegen
       - name: Сгенерировать проект
