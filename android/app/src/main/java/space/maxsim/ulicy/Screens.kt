@@ -376,7 +376,7 @@ fun FinalScreen(c: Content, store: Store, nav: NavController) {
                 Spacer(Modifier.height(18.dp))
                 if (store.blocks.size >= 3 || store.wordSolved) {
                     var name by remember { mutableStateOf(store.name) }
-                    OutlinedTextField(name, { name = it; store.setName(it) }, label = { Text("Ваше имя для грамоты") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(name, { name = it; store.updateName(it) }, label = { Text("Ваше имя для грамоты") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                     Spacer(Modifier.height(12.dp))
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Pal.paper).border(3.dp, Pal.acc, RoundedCornerShape(20.dp)).padding(22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {

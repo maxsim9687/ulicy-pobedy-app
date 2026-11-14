@@ -39,7 +39,7 @@ class Store(ctx: Context) {
         checkins = checkins + id; points += 15; persist(); return true
     }
     fun solveWord() { if (!wordSolved) { wordSolved = true; points += 10; persist() } }
-    fun setName(v: String) { name = v; persist() }
+    fun updateName(v: String) { name = v; persist() }
     fun quizResult(score: Int) { if (score > quizBest) { quizBest = score; persist() } }
     fun reset() {
         stage = 0; done = emptySet(); blocks = emptySet(); checkins = emptySet(); points = 0; wordSolved = false
