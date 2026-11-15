@@ -402,7 +402,8 @@ struct PlaqueARView: View {
             guard t else { return }
             model.tapped = false
             if near {
-                newBlock = store.addBlock(target.id)
+                let cur = target; chosen = cur.id
+                newBlock = store.addBlock(cur.id)
                 opened = target
             } else {
                 model.say("Чтобы получить блок, подойдите к улице (или включите демо-режим)")

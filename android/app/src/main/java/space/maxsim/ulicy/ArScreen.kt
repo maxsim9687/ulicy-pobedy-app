@@ -150,14 +150,14 @@ private fun PlaqueOverlay(c: Content, store: Store, plaqueArg: String?, locOk: B
         if (canSee && ori.ok) {
             val widthDp = (260.0 * 20.0 / maxOf(dist, 6.0)).coerceIn(120.0, 300.0)
             val x = w / 2 + (delta / HFOV * w).toFloat()
-            val y = h * 0.42f - (ori.pitch / VFOV * h).toFloat()
+            val y = h * 0.55f - (ori.pitch / VFOV * h).toFloat()
             val wPx = with(density) { widthDp.dp.toPx() }
             if (abs(delta) < HFOV) {
                 Box(Modifier.offset { IntOffset((x - wPx / 2).roundToInt(), (y - wPx * 0.6f).roundToInt()) }
                     .width(widthDp.dp)
                     .graphicsLayer { rotationY = (delta * 0.6).toFloat(); cameraDistance = 12f * density.density }
                     .scale(if (near && centered) pulse else 1f)
-                    .clickable(enabled = near) { opened = target }) {
+                    .clickable(enabled = near) { chosen = target.id; opened = target }) {
                     PlaqueBitmapView(target, hero)
                 }
             }

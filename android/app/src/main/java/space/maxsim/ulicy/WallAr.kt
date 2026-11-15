@@ -209,7 +209,7 @@ fun WallPlaqueAr(c: Content, store: Store, plaqueArg: String?, locOk: Boolean, o
             onGestureListener = rememberOnGestureListener(
                 onSingleTapConfirmed = { e, node ->
                     if (isPlaque(node)) {
-                        if (nearState.value) opened = targetState.value
+                        if (nearState.value) { chosen = targetState.value.id; opened = targetState.value }
                         else message = "Чтобы получить блок, подойдите к улице (или включите демо-режим)"
                     } else placeAt(e.x, e.y)
                 }
