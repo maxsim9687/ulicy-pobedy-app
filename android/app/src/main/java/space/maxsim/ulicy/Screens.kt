@@ -61,9 +61,7 @@ fun HomeScreen(c: Content, store: Store, nav: NavController) {
             Spacer(Modifier.height(18.dp))
             MenuTile("🗺", "Квест «Три улицы»", "Этап ${minOf(store.stage + 1, c.stages.size)} из ${c.stages.size} · очки: ${store.points}", main = true) { nav.navigate("quest") }
             Spacer(Modifier.height(10.dp))
-            MenuTile("📍", "AR-таблички", "Найдите виртуальные доски на улицах · блоков ${store.blocks.size} из 3") { nav.navigate("ar?plaque=&mode=plaques") }
-            Spacer(Modifier.height(10.dp))
-            MenuTile("📷", "Герой рядом", "AR-фото с героем улицы") { nav.navigate("ar?plaque=&mode=hero") }
+            MenuTile("📍", "AR-таблички на стенах", "Повесьте мемориальную доску на стену дома · блоков ${store.blocks.size} из 3") { nav.navigate("ar?plaque=&mode=plaques") }
             Spacer(Modifier.height(10.dp))
             MenuTile("❓", "Викторина", "10 вопросов · лучший результат ${store.quizBest}/10") { nav.navigate("quiz") }
             Spacer(Modifier.height(10.dp))
@@ -126,7 +124,7 @@ fun HeroScreen(c: Content, id: String, nav: NavController) {
                 AssetImage(h.lifeImage, Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)))
                 Text(h.lifeCaption, color = Pal.paper.copy(alpha = .6f), fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
                 Spacer(Modifier.height(18.dp))
-                AccentButton("📷 Фото с героем", Modifier.fillMaxWidth()) { nav.navigate("ar?plaque=${h.id}&mode=hero") }
+                AccentButton("📍 AR-табличка на стене", Modifier.fillMaxWidth()) { nav.navigate("ar?plaque=${h.id}&mode=plaques") }
                 Spacer(Modifier.height(24.dp))
             }
         }

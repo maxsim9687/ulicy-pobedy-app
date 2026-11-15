@@ -119,8 +119,7 @@ struct HomeView: View {
                         }
                     }.padding(.vertical, 6)
                     NavigationLink { QuestView() } label: { Tile(icon: "🗺", title: "Квест «Три улицы»", sub: "Этап \(min(store.stage + 1, c.stages.count)) из \(c.stages.count) · очки: \(store.points)", main: true) }
-                    NavigationLink { PlaqueARView(initial: nil) } label: { Tile(icon: "📍", title: "AR-таблички", sub: "Виртуальные доски на улицах · блоков \(store.blocks.count) из 3") }
-                    NavigationLink { HeroARView(initialHero: "gromov") } label: { Tile(icon: "📷", title: "Герой рядом", sub: "Поставьте героя на землю и сделайте фото") }
+                    NavigationLink { PlaqueARView(initial: nil) } label: { Tile(icon: "📍", title: "AR-таблички на стенах", sub: "Повесьте мемориальную доску на стену дома · блоков \(store.blocks.count) из 3") }
                     NavigationLink { QuizView() } label: { Tile(icon: "❓", title: "Викторина", sub: "10 вопросов · лучший результат \(store.quizBest)/10") }
                     NavigationLink { FinalView() } label: { Tile(icon: "🏅", title: "Знак «Хранитель памяти»", sub: "Собирается из блоков AR-табличек") }
                     NavigationLink { AboutView() } label: { Tile(icon: "ℹ️", title: "О проекте", sub: "Автор, источники, сайт") }
@@ -180,8 +179,8 @@ struct HeroView: View {
                     }
                     Image(uiImage: Assets.image(hero.lifeImage)).resizable().scaledToFit().clipShape(RoundedRectangle(cornerRadius: 16)).padding(.top, 8)
                     Text(hero.lifeCaption).font(.caption).foregroundColor(.paper.opacity(0.6))
-                    NavigationLink { HeroARView(initialHero: hero.id) } label: {
-                        Text("📷 Фото с героем").bold().frame(maxWidth: .infinity).padding().background(Color.acc).foregroundColor(.paper).clipShape(RoundedRectangle(cornerRadius: 14))
+                    NavigationLink { PlaqueARView(initial: hero.id) } label: {
+                        Text("📍 AR-табличка на стене").bold().frame(maxWidth: .infinity).padding().background(Color.acc).foregroundColor(.paper).clipShape(RoundedRectangle(cornerRadius: 14))
                     }.padding(.top, 8)
                 }.padding(20)
             }

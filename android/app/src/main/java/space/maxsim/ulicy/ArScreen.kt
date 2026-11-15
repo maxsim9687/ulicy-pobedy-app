@@ -67,22 +67,26 @@ fun ArScreen(c: Content, store: Store, nav: NavController, plaqueArg: String?, m
     LaunchedEffect(Unit) {
         if (!camOk || !locOk) perm.launch(arrayOf(Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
     }
-    var previewView by remember { mutableStateOf<PreviewView?>(null) }
+    var arFailed by remember { mutableStateOf(false) }
+    val arOk = remember { arCoreSupported(ctx) }
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
-        if (camOk) CameraPreview { previewView = it }
-        else Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        if (!camOk) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Нужен доступ к камере", color = Pal.paper)
         }
-        if (mode == "hero") HeroOverlay(c, plaqueArg, previewView)
-        else PlaqueOverlay(c, store, plaqueArg, locOk)
+        else if (arOk && !arFailed) WallPlaqueAr(c, store, plaqueArg, locOk) { arFailed = true }
+        else {
+            // запасной режим для телефонов без ARCore: компас + GPS
+            CameraPreview { }
+            PlaqueOverlay(c, store, plaqueArg, locOk)
+        }
         // верхняя панель
         Row(Modifier.fillMaxWidth().statusBarsPadding().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(44.dp).clip(CircleShape).background(Color(0x991C0F0E)).clickable { nav.popBackStack() }, contentAlignment = Alignment.Center) {
                 Text("←", color = Pal.paper, fontSize = 22.sp)
             }
             Spacer(Modifier.width(10.dp))
-            Text(if (mode == "hero") "ГЕРОЙ РЯДОМ" else "AR-ТАБЛИЧКИ", color = Pal.paper, fontFamily = Mono, letterSpacing = 2.sp,
+            Text("AR-ТАБЛИЧКИ", color = Pal.paper, fontFamily = Mono, letterSpacing = 2.sp,
                 modifier = Modifier.clip(RoundedCornerShape(10.dp)).background(Color(0x991C0F0E)).padding(horizontal = 10.dp, vertical = 6.dp))
         }
     }
@@ -250,74 +254,7 @@ fun PlaqueView(p: Plaque, h: Hero, compact: Boolean) {
     }
 }
 
-/* ======================= Герой рядом: фото с героем ======================= */
-@Composable
-private fun HeroOverlay(c: Content, heroArg: String?, previewView: PreviewView?) {
-    val ctx = LocalContext.current
-    val ori by rememberOrientation(true)
-    var heroId by remember { mutableStateOf(heroArg?.takeIf { id -> c.heroes.any { it.id == id } } ?: "gromov") }
-    var anchor by remember { mutableStateOf<Double?>(null) }
-    var size by remember { mutableFloatStateOf(0.7f) }
-    val hero = c.hero(heroId)!!
-    val appear by animateFloatAsState(if (anchor != null) 1f else 0f, tween(600), label = "a")
-
-    BoxWithConstraints(Modifier.fillMaxSize()) {
-        val w = constraints.maxWidth.toFloat(); val h = constraints.maxHeight.toFloat()
-        val density = LocalDensity.current
-        val delta = anchor?.let { Geo.angleDiff(it, ori.azimuth) } ?: 0.0
-        val cx = w / 2 + (delta / HFOV * w).toFloat()
-        val bottom = h * 0.86f - (ori.pitch / VFOV * h).toFloat() * (if (anchor != null) 1f else 0f)
-        val hPx = h * size
-        val bmp = remember(heroId) { Content.bitmap(ctx, hero.image) }
-        val wPx = hPx * bmp.width / bmp.height
-        if (anchor != null) {
-            // тень на земле
-            Box(Modifier.offset { IntOffset((cx - wPx * 0.35f).roundToInt(), (bottom - 18).roundToInt()) }
-                .size(with(density) { (wPx * 0.7f).toDp() }, 30.dp).clip(CircleShape).background(Color(0x55000000)))
-            AssetImage(hero.image, Modifier.offset { IntOffset((cx - wPx / 2).roundToInt(), (bottom - hPx * appear).roundToInt()) }
-                .size(with(density) { wPx.toDp() }, with(density) { hPx.toDp() }).graphicsLayer { alpha = appear })
-            // табличка-подпись
-            Text(hero.street.uppercase() + " · " + hero.years, color = Pal.paper, fontFamily = Mono, fontSize = 12.sp,
-                modifier = Modifier.align(Alignment.TopCenter).padding(top = 70.dp).clip(RoundedCornerShape(8.dp)).background(Color(0xCC1C0F0E)).padding(8.dp))
-        }
-        Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().navigationBarsPadding()
-            .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xEE1C0F0E)))).padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                c.heroes.forEach { hh ->
-                    Text(hh.name, color = Pal.paper, fontSize = 13.sp, modifier = Modifier.clip(RoundedCornerShape(50))
-                        .background(if (hh.id == heroId) Pal.acc else Color(0x55F4EFE7)).clickable { heroId = hh.id }.padding(horizontal = 12.dp, vertical = 8.dp))
-                }
-            }
-            Slider(size, { size = it }, valueRange = 0.3f..1.0f, colors = SliderDefaults.colors(thumbColor = Pal.gold, activeTrackColor = Pal.accL))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(onClick = { anchor = ori.azimuth }, colors = ButtonDefaults.buttonColors(containerColor = Pal.acc)) {
-                    Text(if (anchor == null) "Поставить героя" else "Переставить", color = Pal.paper)
-                }
-                Box(Modifier.size(70.dp).clip(CircleShape).background(Pal.acc).border(5.dp, Pal.paper, CircleShape).clickable(enabled = anchor != null) {
-                    val frame = previewView?.bitmap
-                    if (frame == null) { Toast.makeText(ctx, "Камера ещё не готова", Toast.LENGTH_SHORT).show(); return@clickable }
-                    val out = frame.copy(Bitmap.Config.ARGB_8888, true)
-                    val k = out.width / w
-                    val cv = Canvas(out)
-                    val sh = Paint().apply { color = 0x55000000; isAntiAlias = true }
-                    cv.drawOval(RectF((cx - wPx * .35f) * k, (bottom - 18) * k, (cx + wPx * .35f) * k, (bottom + 12) * k), sh)
-                    cv.drawBitmap(bmp, null, RectF((cx - wPx / 2) * k, (bottom - hPx) * k, (cx + wPx / 2) * k, bottom * k), Paint(Paint.FILTER_BITMAP_FLAG))
-                    val tp = Paint().apply { color = 0xFFF4EFE7.toInt(); textSize = 34f * k; isAntiAlias = true }
-                    val bg = Paint().apply { color = 0xCC1C0F0E.toInt() }
-                    val label = "${hero.street} · ${hero.years}"
-                    cv.drawRect(20f * k, out.height - 90f * k, (40f + tp.measureText(label) / k) * k, out.height - 30f * k, bg)
-                    cv.drawText(label, 30f * k, out.height - 48f * k, tp)
-                    saveImage(ctx, out)
-                }, contentAlignment = Alignment.Center) { Text("📷", fontSize = 26.sp) }
-            }
-            Text(if (anchor == null) "Наведите камеру на табличку улицы и нажмите «Поставить героя»" else "Герой стоит на месте – поворачивайте телефон",
-                color = Pal.paper.copy(alpha = .8f), fontSize = 13.sp, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 8.dp))
-        }
-    }
-}
-
-private fun saveImage(ctx: android.content.Context, bmp: Bitmap) {
+fun saveImage(ctx: android.content.Context, bmp: Bitmap) {
     try {
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "ulicy_${System.currentTimeMillis()}.jpg")

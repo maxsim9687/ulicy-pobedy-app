@@ -24,9 +24,9 @@ targets:
         UIRequiredDeviceCapabilities: [arm64]
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIUserInterfaceStyle: Dark
-        NSCameraUsageDescription: "Камера нужна для AR-табличек и фото с героем."
+        NSCameraUsageDescription: "Камера нужна, чтобы повесить AR-табличку на стену."
         NSLocationWhenInUseUsageDescription: "Геолокация нужна, чтобы найти AR-таблички и точки квеста."
-        NSPhotoLibraryAddUsageDescription: "Чтобы сохранить фото с героем в галерею."
+        NSPhotoLibraryAddUsageDescription: "Чтобы сохранить AR-фото с табличкой в галерею."
         NSAppTransportSecurity:
           NSAllowsArbitraryLoadsInWebContent: true
     settings:
