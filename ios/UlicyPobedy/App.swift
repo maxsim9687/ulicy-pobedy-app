@@ -118,7 +118,7 @@ struct HomeView: View {
                             }
                         }
                     }.padding(.vertical, 6)
-                    NavigationLink { QuestView() } label: { Tile(icon: "🗺", title: "Квест «Три улицы»", sub: "Этап \(min(store.stage + 1, c.stages.count)) из \(c.stages.count) · очки: \(store.points)", main: true) }
+                    NavigationLink { QuestView() } label: { Tile(icon: "🗺", title: "Квест «Фронтовой треугольник»", sub: "Этап \(min(store.stage + 1, c.stages.count)) из \(c.stages.count) · очки: \(store.points)", main: true) }
                     NavigationLink { PlaqueARView(initial: nil) } label: { Tile(icon: "📍", title: "AR-таблички на стенах", sub: "Повесьте мемориальную доску на стену дома · блоков \(store.blocks.count) из 3") }
                     NavigationLink { QuizView() } label: { Tile(icon: "❓", title: "Викторина", sub: "10 вопросов · лучший результат \(store.quizBest)/10") }
                     NavigationLink { FinalView() } label: { Tile(icon: "🏅", title: "Знак «Хранитель памяти»", sub: "Собирается из блоков AR-табличек") }

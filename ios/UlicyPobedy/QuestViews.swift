@@ -245,7 +245,7 @@ struct FinalView: View {
                             .background(Color.paper.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 12)).foregroundColor(.paper)
                         VStack(spacing: 6) {
                             Text("ГРАМОТА").font(.system(size: 13, design: .monospaced)).tracking(3).foregroundColor(.acc)
-                            Text("Квест «Три улицы» пройден!").font(.system(size: 22, weight: .bold, design: .serif)).multilineTextAlignment(.center)
+                            Text("Квест «Фронтовой треугольник» пройден!").font(.system(size: 22, weight: .bold, design: .serif)).multilineTextAlignment(.center)
                             Text(store.name.isEmpty ? "—" : store.name).font(.system(size: 26, weight: .bold, design: .serif))
                             Text("за прохождение маршрута по улицам Рябинина, Громова и Гризодубовой").multilineTextAlignment(.center)
                             Text("Очки: \(store.points)").bold().foregroundColor(.acc)

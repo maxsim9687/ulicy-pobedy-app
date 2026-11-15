@@ -59,7 +59,7 @@ fun HomeScreen(c: Content, store: Store, nav: NavController) {
                 }
             }
             Spacer(Modifier.height(18.dp))
-            MenuTile("🗺", "Квест «Три улицы»", "Этап ${minOf(store.stage + 1, c.stages.size)} из ${c.stages.size} · очки: ${store.points}", main = true) { nav.navigate("quest") }
+            MenuTile("🗺", "Квест «Фронтовой треугольник»", "Этап ${minOf(store.stage + 1, c.stages.size)} из ${c.stages.size} · очки: ${store.points}", main = true) { nav.navigate("quest") }
             Spacer(Modifier.height(10.dp))
             MenuTile("📍", "AR-таблички на стенах", "Повесьте мемориальную доску на стену дома · блоков ${store.blocks.size} из 3") { nav.navigate("ar?plaque=&mode=plaques") }
             Spacer(Modifier.height(10.dp))
@@ -379,7 +379,7 @@ fun FinalScreen(c: Content, store: Store, nav: NavController) {
                     Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Pal.paper).border(3.dp, Pal.acc, RoundedCornerShape(20.dp)).padding(22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("ГРАМОТА", color = Pal.acc, fontFamily = Mono, letterSpacing = 3.sp)
-                        Text("Квест «Три улицы» пройден!", color = Pal.ink, fontFamily = Serif, fontWeight = FontWeight.Bold, fontSize = 22.sp, textAlign = TextAlign.Center)
+                        Text("Квест «Фронтовой треугольник» пройден!", color = Pal.ink, fontFamily = Serif, fontWeight = FontWeight.Bold, fontSize = 22.sp, textAlign = TextAlign.Center)
                         Spacer(Modifier.height(8.dp))
                         Text(name.ifBlank { "—" }, color = Pal.ink, fontFamily = Serif, fontSize = 26.sp, fontWeight = FontWeight.Bold)
                         Text("за прохождение маршрута по улицам Рябинина, Громова и Гризодубовой", color = Pal.ink, textAlign = TextAlign.Center)
