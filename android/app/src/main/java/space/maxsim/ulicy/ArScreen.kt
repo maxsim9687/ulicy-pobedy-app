@@ -158,12 +158,12 @@ private fun PlaqueOverlay(c: Content, store: Store, plaqueArg: String?, locOk: B
                     .graphicsLayer { rotationY = (delta * 0.6).toFloat(); cameraDistance = 12f * density.density }
                     .scale(if (near && centered) pulse else 1f)
                     .clickable(enabled = near) { opened = target }) {
-                    PlaqueView(target, hero, compact = widthDp < 200)
+                    PlaqueBitmapView(target, hero)
                 }
             }
         }
         // подсказки
-        Column(Modifier.align(Alignment.TopCenter).padding(top = 70.dp).padding(horizontal = 16.dp).clip(RoundedCornerShape(14.dp))
+        Column(Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 60.dp).padding(horizontal = 16.dp).clip(RoundedCornerShape(14.dp))
             .background(Color(0xCC1C0F0E)).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(hero.street, color = Pal.paper, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             val status = when {

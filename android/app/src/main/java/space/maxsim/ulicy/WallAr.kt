@@ -34,6 +34,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -216,7 +218,7 @@ fun WallPlaqueAr(c: Content, store: Store, plaqueArg: String?, locOk: Boolean, o
         )
 
         // верхняя подсказка
-        Column(Modifier.align(Alignment.TopCenter).padding(top = 70.dp).padding(horizontal = 16.dp).clip(RoundedCornerShape(14.dp))
+        Column(Modifier.align(Alignment.TopCenter).statusBarsPadding().padding(top = 60.dp).padding(horizontal = 16.dp).clip(RoundedCornerShape(14.dp))
             .background(Color(0xCC1C0F0E)).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(hero.street, color = Pal.paper, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             val status = when {
@@ -392,4 +394,15 @@ private fun snapshot(ctx: Context, v: ARSceneView, hero: Hero) {
     } catch (e: Exception) {
         Toast.makeText(ctx, "Не удалось сделать снимок", Toast.LENGTH_SHORT).show()
     }
+}
+
+/** Та же гранитная доска, что и в ARCore, для запасного режима (компас + GPS). */
+@Composable
+fun PlaqueBitmapView(p: Plaque, h: Hero) {
+    val ctx = LocalContext.current
+    val img = remember(p.id) { plaqueBitmap(ctx, p, h).asImageBitmap() }
+    androidx.compose.foundation.Image(img, contentDescription = h.fullName,
+        modifier = Modifier.fillMaxWidth().aspectRatio(1200f / 840f)
+            .shadow(18.dp, RoundedCornerShape(4.dp))
+            .border(5.dp, Brush.linearGradient(listOf(Color(0xFFD9B56A), Color(0xFF8A6630), Color(0xFFC9A35A), Color(0xFF6E4F22))), RoundedCornerShape(4.dp)))
 }
