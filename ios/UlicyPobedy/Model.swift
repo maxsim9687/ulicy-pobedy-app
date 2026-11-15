@@ -60,6 +60,40 @@ struct AppContent: Codable {
     func hero(_ id: String?) -> Hero? { heroes.first { $0.id == id } }
 }
 
+/// Рассказ в дорогу: озвучен в ElevenLabs, показывается на этапе `stage`.
+struct RoadStory: Codable {
+    let stage, when, title, sub, audio: String
+    let text: [String]
+
+    static let all: [RoadStory] = {
+        guard let url = Bundle.main.url(forResource: "road", withExtension: "json", subdirectory: "shared"),
+              let data = try? Data(contentsOf: url),
+              let list = try? JSONDecoder().decode([RoadStory].self, from: data) else { return [] }
+        return list
+    }()
+    static func forStage(_ id: String) -> RoadStory? { all.first { $0.stage == id } }
+}
+
+struct RoadStoryView: View {
+    let story: RoadStory
+    @State private var showText = false
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("🎧 " + story.when).bold().font(.system(size: 15)).foregroundColor(.acc)
+            AudioRow(file: story.audio, title: story.title)
+            Text(story.sub).font(.system(size: 12)).foregroundColor(.ink.opacity(0.65))
+            Button { showText.toggle() } label: {
+                Text(showText ? "▾ Скрыть текст" : "▸ Текст рассказа").bold().font(.system(size: 14)).foregroundColor(.acc)
+            }
+            if showText { ForEach(Array(story.text.enumerated()), id: \.offset) { _, p in Text(p).font(.system(size: 15)) } }
+        }
+        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(red: 0.937, green: 0.89, blue: 0.784))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.gold, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+    }
+}
+
 enum Assets {
     private static var cache: [String: UIImage] = [:]
     static func image(_ name: String) -> UIImage {

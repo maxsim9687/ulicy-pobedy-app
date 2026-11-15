@@ -30,10 +30,14 @@ data class Stage(
 
 data class QuizItem(val q: String, val o: List<String>, val a: Int, val e: String)
 
+/** Рассказ в дорогу: озвучен в ElevenLabs, играет на этапе stage. */
+data class Road(val stage: String, val hint: String, val title: String, val sub: String, val audio: String, val text: List<String>)
+
 class Content(
     val word: String, val site: String,
     val heroes: List<Hero>, val plaques: List<Plaque>,
-    val stages: List<Stage>, val quiz: List<QuizItem>, val stagesJson: String
+    val stages: List<Stage>, val quiz: List<QuizItem>, val stagesJson: String,
+    val road: List<Road> = emptyList()
 ) {
     fun hero(id: String?) = heroes.firstOrNull { it.id == id }
 
@@ -90,7 +94,11 @@ class Content(
                     QuizItem(q.getString("q"), strings(q.getJSONArray("o")), q.getInt("a"), q.getString("e"))
                 }
             }
-            return Content(root.getString("word"), root.getString("site"), heroes, plaques, stages, quiz, stagesArr.toString())
+            val road = try {
+                val ra = org.json.JSONArray(ctx.assets.open("road.json").bufferedReader(Charsets.UTF_8).use { it.readText() })
+                List(ra.length()) { i -> ra.getJSONObject(i).let { r -> Road(r.getString("stage"), r.getString("when"), r.getString("title"), r.getString("sub"), r.getString("audio"), strings(r.getJSONArray("text"))) } }
+            } catch (e: Exception) { emptyList() }
+            return Content(root.getString("word"), root.getString("site"), heroes, plaques, stages, quiz, stagesArr.toString(), road)
         }
     }
 }

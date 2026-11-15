@@ -71,6 +71,7 @@ struct StageCard: View {
                 }
                 Text("✉ " + s.intro).italic().font(.system(size: 15)).opacity(0.85)
                 if let h = hero { AudioRow(file: h.audio, title: "Аудиогид: \(h.name)") }
+                if let r = RoadStory.forStage(s.id) { RoadStoryView(story: r) }
                 VStack(alignment: .leading, spacing: 4) {
                     Text(s.kind == "food" ? "🍽 Можно перекусить" : "Что делать").bold()
                     ForEach(Array(s.how.enumerated()), id: \.offset) { k, t in Text("\(k + 1). \(t)").font(.system(size: 15)) }

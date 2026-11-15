@@ -161,6 +161,7 @@ fun QuestScreen(c: Content, store: Store, nav: NavController) {
                 Spacer(Modifier.height(10.dp))
                 AndroidView(factory = { cx ->
                     WebView(cx).apply {
+                        layoutParams = android.view.ViewGroup.LayoutParams(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.MATCH_PARENT)
                         settings.javaScriptEnabled = true
                         settings.domStorageEnabled = true
                         webViewClient = object : WebViewClient() {
@@ -223,6 +224,20 @@ private fun StageCard(c: Content, store: Store, nav: NavController, i: Int, fix:
         if (hero != null) {
             Spacer(Modifier.height(12.dp))
             AudioPlayer(hero.audio, "Аудиогид: ${hero.name}")
+        }
+        c.road.firstOrNull { it.stage == s.id }?.let { r ->
+            var showText by remember(r.stage) { mutableStateOf(false) }
+            Spacer(Modifier.height(12.dp))
+            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color(0xFFEFE3C8))
+                .border(1.dp, Color(0xFFD9B56A), RoundedCornerShape(16.dp)).padding(12.dp)) {
+                Text("🎧 " + r.hint, color = Pal.acc, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Spacer(Modifier.height(8.dp))
+                AudioPlayer(r.audio, r.title)
+                Text(r.sub, color = Pal.ink.copy(alpha = .65f), fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
+                Text(if (showText) "▾ Скрыть текст" else "▸ Текст рассказа", color = Pal.acc, fontWeight = FontWeight.Bold, fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 8.dp).clickable { showText = !showText })
+                if (showText) r.text.forEach { p -> Text(p, color = Pal.ink, fontSize = 15.sp, lineHeight = 21.sp, modifier = Modifier.padding(top = 8.dp)) }
+            }
         }
         Spacer(Modifier.height(12.dp))
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(if (s.kind == "food") Color(0xFFF3E2C4) else Color(0x0F1C0F0E)).padding(14.dp)) {
