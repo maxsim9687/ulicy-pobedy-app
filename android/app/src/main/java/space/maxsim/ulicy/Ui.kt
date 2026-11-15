@@ -164,7 +164,7 @@ fun AudioPlayer(file: String, title: String, light: Boolean = true) {
             Text("озвучка ElevenLabs", color = fg.copy(alpha = .6f), fontSize = 12.sp)
             Spacer(Modifier.height(6.dp))
             LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(4.dp).clip(RoundedCornerShape(2.dp)),
-                color = Pal.acc, trackColor = fg.copy(alpha = .15f))
+                color = Pal.acc, trackColor = fg.copy(alpha = .15f), gapSize = 0.dp, drawStopIndicator = {})
         }
     }
 }

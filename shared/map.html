@@ -10,7 +10,6 @@ html,body,#map{margin:0;padding:0;width:100%;height:100%;background:#efe8de;font
 .me{width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 0 0 8px rgba(59,130,246,.25);box-sizing:border-box}
 #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:20px;color:#1c0f0e}
 </style>
-<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"></script>
 </head><body><div id="map"></div><div id="err">Карта не загрузилась.<br>Проверьте интернет.</div>
 <script>
 /* Карта квеста для приложения. Нативная часть вызывает:
@@ -23,8 +22,18 @@ var STREETS={"Рябинина":[[[56.79425,60.50621],[56.79253,60.50305]],[[56.
 "Гризодубовой":[[[56.80529,60.58197],[56.80247,60.59047]]]};
 var ROUTE=[[[56.7936,60.5050],[56.78911,60.51452]],[[56.78911,60.51452],[56.7926,60.5210],[56.7969,60.5288],[56.8051,60.5402],[56.8099,60.5462],[56.81273,60.55851]],[[56.81273,60.55851],[56.8085,60.5706],[56.80497,60.57502],[56.8040,60.5860]]];
 function call(fn){ if(ready) fn(); else pending.push(fn); }
-if(!window.ymaps){ document.getElementById('err').style.display='flex'; }
-else ymaps.ready(function(){
+function showErr(t){ var e=document.getElementById("err"); e.innerHTML=t+"<br><button onclick=\"loadMap()\" style=\"margin-top:12px;padding:10px 16px;border-radius:12px;border:0;background:#9e2a2b;color:#fff;font:600 14px sans-serif\">Загрузить карту ещё раз</button>"; e.style.display="flex"; }
+var tries=0;
+function loadMap(){
+  tries++; document.getElementById("err").style.display="none";
+  var s=document.createElement("script"); s.src="https://api-maps.yandex.ru/2.1/?lang=ru_RU"; s.async=true;
+  var t=setTimeout(function(){ if(!ready){ showErr("Карта грузится слишком долго – медленный интернет."); if(tries<3) setTimeout(function(){ if(!ready) loadMap(); },8000); } },25000);
+  s.onerror=function(){ clearTimeout(t); showErr("Карта не загрузилась. Проверьте интернет."); };
+  s.onload=function(){ if(!window.ymaps){ clearTimeout(t); showErr("Карта не загрузилась."); return; } ymaps.ready(function(){ clearTimeout(t); try{ initMap(); }catch(e){ showErr("Ошибка карты: "+e.message); } }, function(e){ clearTimeout(t); showErr("Ошибка карты: "+(e&&e.message||e)); }); };
+  document.head.appendChild(s);
+}
+window.onerror=function(m){ if(!ready) showErr("Ошибка карты: "+m); };
+function initMap(){ if(map) return;
   map=new ymaps.Map('map',{center:[56.802,60.54],zoom:12,controls:['zoomControl','typeSelector']});
   window.PinLayout=ymaps.templateLayoutFactory.createClass('<div class="$[properties.cls]">$[properties.num]</div>');
   window.MeLayout=ymaps.templateLayoutFactory.createClass('<div class="me"></div>');
@@ -36,8 +45,9 @@ else ymaps.ready(function(){
   map.geoObjects.add(new ymaps.Polyline(ROUTE[1],{hintContent:'Трамвай № 16'},{strokeColor:'#9e2a2b',strokeWidth:4,strokeStyle:'shortdot'}));
   map.geoObjects.add(new ymaps.Polyline(ROUTE[2],{},{strokeColor:'#1c0f0e',strokeWidth:3,strokeStyle:'dash'}));
   map.geoObjects.add(new ymaps.Placemark([56.81273,60.55851],{cls:'pin tram',num:'Т',hintContent:'Остановка «Волгоградская улица»'},{iconLayout:PinLayout,iconShape:{type:'Circle',coordinates:[11,11],radius:12},iconOffset:[-11,-11]}));
-  ready=true; pending.forEach(function(f){f();}); pending=[];
-});
+  ready=true; document.getElementById("err").style.display="none"; pending.forEach(function(f){f();}); pending=[];
+}
+loadMap();
 function setup(json){ call(function(){
   stages=JSON.parse(json);
   stages.forEach(function(s,k){ if(s.kind==='final') return;

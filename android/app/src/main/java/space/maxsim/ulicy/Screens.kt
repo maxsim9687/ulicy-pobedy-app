@@ -431,7 +431,7 @@ fun QuizScreen(c: Content, store: Store, nav: NavController) {
                 if (i < c.quiz.size) {
                     val q = c.quiz[i]
                     Text("Вопрос ${i + 1} / ${c.quiz.size} · очки $score", color = Pal.paper.copy(alpha = .7f), fontFamily = Mono, fontSize = 13.sp)
-                    LinearProgressIndicator(progress = { i / c.quiz.size.toFloat() }, Modifier.fillMaxWidth().padding(vertical = 10.dp), color = Pal.accL)
+                    LinearProgressIndicator(progress = { i / c.quiz.size.toFloat() }, Modifier.fillMaxWidth().padding(vertical = 10.dp), color = Pal.accL, gapSize = 0.dp, drawStopIndicator = {})
                     PaperCard {
                         H2(q.q, Pal.ink)
                         Spacer(Modifier.height(10.dp))
