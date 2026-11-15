@@ -32,8 +32,10 @@ function loadMap(){
   s.onload=function(){ if(!window.ymaps){ clearTimeout(t); showErr("Карта не загрузилась."); return; } ymaps.ready(function(){ clearTimeout(t); try{ initMap(); }catch(e){ showErr("Ошибка карты: "+e.message); } }, function(e){ clearTimeout(t); showErr("Ошибка карты: "+(e&&e.message||e)); }); };
   document.head.appendChild(s);
 }
-window.onerror=function(m){ if(!ready) showErr("Ошибка карты: "+m); };
-function initMap(){ if(map) return;
+window.onerror=function(m){ console.log("MAPDBG error "+m); if(!ready) showErr("Ошибка карты: "+m); };
+window.addEventListener("error",function(e){ if(e.target && e.target.src) console.log("MAPDBG resfail "+String(e.target.src).slice(0,120)); },true);
+setTimeout(function(){ var imgs=document.querySelectorAll("img"), ok=0; for(var i=0;i<imgs.length;i++) if(imgs[i].naturalWidth>0) ok++; console.log("MAPDBG t8 ready="+ready+" ymaps="+(typeof ymaps)+" body="+document.body.clientWidth+"x"+document.body.clientHeight+" map="+(map?map.container.getSize().join("x"):"none")+" imgs="+imgs.length+" ok="+ok+" canv="+document.querySelectorAll("canvas").length+" ua="+navigator.userAgent.slice(-40)); },12000);
+function initMap(){ if(map) return; console.log("MAPDBG init body="+document.body.clientWidth+"x"+document.body.clientHeight);
   map=new ymaps.Map('map',{center:[56.802,60.54],zoom:12,controls:['zoomControl','typeSelector']},{autoFitToViewport:'always'});
   window.addEventListener('resize',function(){ map.container.fitToViewport(); });
   setTimeout(function(){ map.container.fitToViewport(); },500); setTimeout(function(){ map.container.fitToViewport(); },2000);
